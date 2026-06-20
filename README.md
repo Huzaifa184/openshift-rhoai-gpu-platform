@@ -114,3 +114,62 @@ Everything below was confirmed via live cluster output during the build, not ass
 ## Author
 
 Built and documented by Huzaifa as a hands-on platform engineering project — happy to walk through any part of the design or trade-offs in more depth.
+
+
+# Lessons Learned
+
+This is a record of the actual problems hit during this build, what caused them, and how they were resolved — not a cleaned-up happy path. Each one cost real debugging time; documenting them is meant to save that time for the next person, and to demonstrate the troubleshooting process itself, which is a large part of what platform engineering actually is.
+
+## 1. PCI passthrough conflicts with nested hardware-assisted virtualization
+
+**Symptom:** ESXi refused to add the GPU as a PCI device to the worker VM: `PCI passthrough devices cannot be added when Nested Hardware-Assisted Virtualization is enabled.`
+
+**Cause:** VMware does not allow PCI passthrough and nested virtualization (exposing VT-x/AMD-V to the guest) on the same VM simultaneously — both require conflicting control over EPT/IOMMU memory management.
+
+**Fix:** Power off the VM, disable "Expose hardware-assisted virtualization to the guest OS" under CPU settings, then retry the passthrough configuration. Nested virt exposure is only needed if a node will run OpenShift Virtualization/KubeVirt workloads — not relevant for a plain container worker.
+
+## 2. PCI passthrough requires full memory reservation
+
+**Symptom:** VM failed to power on: `Invalid memory setting: memory reservation (sched.mem.min) should be equal to memsize.`
+
+**Cause:** Passthrough devices can DMA directly into guest memory, which means the hypervisor cannot swap or balloon that memory — it must be fully pinned.
+
+**Fix:** Edit Settings → Memory tab → enable "Reserve all guest memory (All locked)."
+
+## 3. NVIDIA's consumer driver refuses to load inside a VM
+
+**Cause:** NVIDIA's consumer (GeForce) driver checks for a hypervisor signature and declines to initialize if it detects it's running inside a VM — a deliberate vendor restriction, not a bug.
+
+**Fix:** Add `hypervisor.cpuid.v0 = "FALSE"` to the VM's `.vmx` configuration (via Edit Settings → VM Options → Advanced → Edit Configuration, or directly in the `.vmx` file over SSH) to spoof bare metal before the OS boots and the driver loads.
+
+## 4. RHCOS is immutable — there is no manual driver install
+
+**Mistake avoided:** The instinct on a normal Linux box is to SSH in and run NVIDIA's `.run` installer. On RHCOS (the OS OpenShift workers run), this doesn't work — the filesystem is managed by the Machine Config Operator and any manual changes get reverted on the next sync.
+
+**Correct approach:** The NVIDIA GPU Operator's driver DaemonSet builds and loads a kernel module matched exactly to the running RHCOS kernel version, inside a privileged container. That's the only supported mechanism for getting a GPU driver onto an immutable node. Verification at the hardware level before the driver exists should use `lspci`, not `nvidia-smi` — the latter only becomes meaningful once the GPU Operator's driver pod is `Running`.
+
+## 5. RHOAI documentation version drift: Accelerator profiles vs Hardware profiles
+
+**Symptom:** Following Red Hat's official "Enabling accelerators" documentation (RHOAI 2.16), the referenced `Settings → Accelerator profiles` menu item and `AcceleratorProfile` CRD did not exist anywhere in the cluster.
+
+**Cause:** The documentation consulted was for RHOAI 2.16. The actual deployed version was RHOAI 3.4.0. Starting in RHOAI 2.19, "Accelerator profiles" was deprecated and fully replaced by "Hardware profiles" — a different CRD (`hardwareprofiles.infrastructure.opendatahub.io`), a different menu location (`Settings → Environment setup → Hardware profiles`), and a different configuration workflow entirely.
+
+**Fix:** Always confirm the exact installed operator version before following version-specific procedures:
+```
+oc get csv -n redhat-ods-operator
+```
+A documented upgrade-path step (deleting a `migration-gpu-status` ConfigMap) was also evaluated and correctly ruled out — that step only applies to clusters upgrading from an older accelerator-profile-based install, not a fresh 3.x deployment, where the ConfigMap never existed in the first place.
+
+## 6. CUDA MPS does not currently work correctly on OpenShift
+
+**Finding, not yet hit as a live failure:** Before configuring CUDA MPS as a GPU-sharing strategy, research surfaced a documented, currently-open issue specific to OpenShift: MPS test pods report success, but only one process actually executes on the GPU at a time — Red Hat and NVIDIA engineers have an open item to fix this. This is distinct from generic Kubernetes, where MPS does work as documented.
+
+**Decision:** Time-slicing was used instead, both because it's confirmed working on this platform and because it more honestly represents the tradeoffs being made — no memory isolation, shared fault domain, but functional. The lesson here is procedural: confirm a platform-specific known-issue list before investing setup time in a feature, rather than discovering it mid-implementation.
+
+## 7. Hardware profile resource limits should reflect real node capacity, not template defaults
+
+**Observation:** RHOAI's default hardware profile ships with conservative CPU/memory ceilings (4 cores / 8GiB) inherited as a starting template. For a GPU-dedicated profile on a node with significantly more headroom (7.5 cores / 29.2GiB allocatable on `worker1`), leaving these at template defaults would have under-provisioned every workload using the profile by default. Limits were recalculated against actual `oc describe node` allocatable values, leaving a deliberate margin for the GPU Operator's own DaemonSet pods running on the same node.
+
+## General principle that held throughout this build
+
+Several of the issues above came from applying documentation, configuration, or prior assumptions without first verifying them against the actual running cluster — a CRD name, a config field, a procedure intended for a different version or scenario. The consistent fix in every case was the same: check the live cluster state directly (`oc get crd`, `oc get csv`, `oc describe node`) before acting on an assumption, however confident-sounding the source.
