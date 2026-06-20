@@ -1,6 +1,3 @@
-# openshift-ai-disconnected-blueprint
-Enterprise-grade OpenShift AI + NVIDIA GPU Operator blueprint for disconnected/regulated environments, with LLMOps (RAG/agents), runbooks, manifests, and reference architectures.
-
 # RHOAI Hybrid GPU Platform Lab
 
 A self-hosted, production-pattern Red Hat OpenShift AI platform built from bare metal — no managed control plane, no cloud GPU credits. This repository documents the architecture, configuration, and verified engineering decisions behind a hybrid-hypervisor OpenShift cluster running GPU-accelerated AI workloads on consumer hardware.
