@@ -248,7 +248,7 @@ oc get pods -n redhat-ods-operator
 
 ### DSCInitialization
 
-Created automatically by the operator on first install. Configures the applications namespace, monitoring namespace, and trusted CA bundle.
+DSCInitialization is a CRD, created automatically by the operator on first install. Configures the applications namespace, monitoring namespace, and trusted CA bundle.
 
 Key fields:
 
