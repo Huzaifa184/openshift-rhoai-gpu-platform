@@ -76,7 +76,9 @@ Production-pattern OpenShift AI 3.4.0 platform, self-hosted on bare-metal ESXi, 
 <img width="949" height="504" alt="image" src="https://github.com/user-attachments/assets/e0332e2d-55fb-4dbe-b84e-cd3128ecc0b3" />
 
 ---
+<img width="494" height="439" alt="image" src="https://github.com/user-attachments/assets/e1788fec-0ae5-4651-a9ef-504a0936b574" />
 
+---
 <img width="1891" height="1014" alt="image" src="https://github.com/user-attachments/assets/b6b91083-fa30-49a2-8ad7-d43309f57e2f" />
 
 ---
