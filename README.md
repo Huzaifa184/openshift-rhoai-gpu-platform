@@ -95,12 +95,12 @@ Production-pattern OpenShift AI 3.4.0 platform, self-hosted on bare-metal ESXi, 
 
 ### Topology
 
-**Hybrid hypervisor — deliberate, not default.**
+**Hybrid hypervisor**
 Master nodes run nested inside VMware Workstation Pro on a Windows laptop.
 Worker nodes run on bare-metal ESXi on a separate physical workstation.
-The GPU-bearing worker (worker1) is on bare-metal ESXi — the only viable path for PCI passthrough on consumer hardware.
+The GPU-bearing worker (worker1) is on bare-metal ESXi, the viable path for PCI passthrough on consumer hardware.
 
-**Connected UPI — not IPI.**
+**Connected UPI**
 Self-hosted HAProxy and BIND9 on a dedicated RHEL 10 bastion node. Mirrors the install pattern used in regulated environments where infrastructure is explicitly managed rather than abstracted away.
 
 ### Infrastructure Setup
@@ -108,7 +108,7 @@ Self-hosted HAProxy and BIND9 on a dedicated RHEL 10 bastion node. Mirrors the i
 - **Static IP allocation:** All nodes assigned static IPs prior to installation. No DHCP dependency ensures predictable DNS resolution and HAProxy backend targeting across reboots.
 - **Bridged networking on Workstation Pro:** Master VMs placed directly on the physical LAN segment alongside ESXi workers. Required for OVN-Kubernetes and the API VIP to function across the hybrid topology.
 - **Bastion node (RHEL 10):** Single VM serving three roles:
-  - **HAProxy:** Layer 4 load balancer — API :6443, MCS :22623, ingress :80/:443
+  - **HAProxy:** Layer 4 load balancer, API :6443, MCS :22623, ingress :80/:443
   - **BIND9:** Authoritative DNS for `openshift-ai.huzaifa.lab` — forward + reverse zones, wildcard `*.apps`
   - **Apache httpd:** Served RHCOS ignition files during UPI bootstrap
 - **UPI install flow:** `install-config.yaml` → manifests → ignition configs → ISO boot → bootstrap → masters → workers → bootstrap removed
