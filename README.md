@@ -373,6 +373,9 @@ hypervisor.cpuid.v0 = "FALSE"
 lspci | grep -i nvidia
 # 13:00.0 VGA compatible controller: NVIDIA Corporation TU116 [GeForce GTX 1660 SUPER]
 ```
+<img width="439" height="32" alt="image" src="https://github.com/user-attachments/assets/10327622-8a18-471a-9c15-f3c7ad0a01ae" />
+
+
 <img width="1141" height="726" alt="image" src="https://github.com/user-attachments/assets/c8ffa824-21fa-4a39-9e75-8f9f3b984178" />
 
 ### NVIDIA GPU Operator
