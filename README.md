@@ -5,7 +5,7 @@ KServe model serving, and a verified DeepSeek R1 inference endpoint. All self ma
 
 ---
 
-## Platform Status
+## Platform 
 
 | Component | Status | Comments |
 |-----------|--------|----------|
@@ -30,7 +30,7 @@ KServe model serving, and a verified DeepSeek R1 inference endpoint. All self ma
 | GPU | NVIDIA GeForce GTX 1660 Super · TU116 · Turing (SM 7.5) · 6 GB GDDR6 |
 | Hypervisor | VMware ESXi 7.0 |
 
-### Laptop : VMware Workstation Pro Host
+### VMware Workstation Pro Host : Lenovo Legion 5 16IRX9
 
 | Component | Specification |
 |-----------|---------------|
