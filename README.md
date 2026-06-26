@@ -377,15 +377,12 @@ Time-slicing exposes a single physical GPU as multiple schedulable resources. Tw
 
 **MPS (Multi-Process Service)** shares a single CUDA context across multiple processes, reducing context switch overhead. Documented as supported on Kubernetes. However, there is a known open issue specific to OpenShift: MPS test pods report success but only one process executes on the GPU at a time — the sharing does not actually occur. Red Hat and NVIDIA have an open item on this. MPS was evaluated and ruled out before implementation, not discovered as a failure mid-deployment.
 
-**Time-slicing** was the remaining viable option. It round-robins GPU access between processes at a configurable interval. No memory isolation, shared fault domain — a pod crash can affect co-located workloads. Acceptable for a single-user lab where both slices are unlikely to be active simultaneously. Two slices are configured, matching the hardware profile `maxCount` and leaving room for a second workload without contention at idle.
-
 **Why time-slicing over MIG and MPS:**
 
-| Strategy | Status on OCP | Reason not used |
-|----------|--------------|-----------------|
-| MIG | Not supported | Requires Ampere (SM ≥ 8.0). GTX 1660 Super is Turing (SM 7.5) |
-| MPS | Broken on OCP | Known open issue : pods report success but only one process executes on GPU at a time |
-| Time-slicing | Working | Confirmed functional on this platform |
+**Time-slicing** was the remaining viable option. It round-robins GPU access between processes at a configurable interval. No memory isolation, shared fault domain — a pod crash can affect co-located workloads. Acceptable for a single-user lab where both slices are unlikely to be active simultaneously. Two slices are configured, matching the hardware profile `maxCount` and leaving room for a second workload without contention at idle.
+
+
+
 
 Manifest: [`manifests/gpu/time-slicing-config.yaml`](manifests/gpu/time-slicing-config.yaml)
 
