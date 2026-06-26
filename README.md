@@ -573,20 +573,7 @@ curl -k -X POST \
     "temperature": 0.6
   }' | python3 -m json.tool
 # HTTP 200 · chain-of-thought in content · answer: 391 · ~12–17 tok/s
-```
 
-### Troubleshooting
-
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| OOM during CUDA graph capture | Default vLLM mode exceeds 6 GB VRAM | Add `--enforce-eager` to Deployment args |
-| Pod starts with old args after patching IS | RHOAI 3.4 does not reconcile IS args to Deployment | Patch Deployment directly via `oc patch` |
-| 404 on `/chat/completions` | Missing `/v1` prefix | Use `/v1/chat/completions` |
-| Model not found error | Model name mismatch (dot vs no dot) | Use `deepseek-r1-distill-qwen-15b` |
-| Second pod OOM on rolling update | Old pod holds GPU memory while new pod starts | Force delete old pod before new one initialises |
-| `requests > limits` reconcile error | Dashboard set CPU requests=2, limits=1 | Patch IS: `requests.cpu=1`, `limits.cpu=2` |
-
----
 
 ## Frontend
 
