@@ -1,6 +1,6 @@
 # Red Hat OpenShift AI : GPU Platform
 
-Production-pattern OpenShift AI 3.4.0 platform — self-hosted on bare-metal ESXi, GTX 1660 Super GPU passthrough, DeepSeek R1 1.5B w8a8 serving at 12–17 tok/s. No cloud dependency.
+Production-pattern OpenShift AI 3.4.0 platform, self-hosted on bare-metal ESXi, GTX 1660 Super GPU passthrough, DeepSeek R1 1.5B w8a8 serving at 12–17 tok/s, no cloud dependency.
 
 
 ---
