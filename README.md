@@ -408,8 +408,8 @@ Verify GPU is schedulable:
 
 ```bash
 oc describe node worker1.openshift-ai.huzaifa.lab | grep "nvidia.com/gpu"
-# Capacity:    nvidia.com/gpu: 2
-# Allocatable: nvidia.com/gpu: 2
+# Capacity:    nvidia.com/gpu: 1
+# Allocatable: nvidia.com/gpu: 1
 ```
 
 Verify driver inside the node:
