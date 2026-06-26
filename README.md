@@ -5,16 +5,17 @@ KServe model serving, and a verified DeepSeek R1 inference endpoint. All self ma
 
 ---
 
-## Platform 
+## Platform Status
 
-| Component | Status | Comments |
-|-----------|--------|----------|
-| OpenShift 4.21 UPI | Running | Connected, self-hosted DNS + LB |
-| NVIDIA GPU Operator | Running | Driver 580.126.20 · DCGM metrics live |
-| RHOAI 3.4.0 | Running | DataScienceCluster reconciled |
-| MinIO AIStor | Running | In-cluster S3 · 899GB capacity |
-| KServe RawDeployment | Running | InferenceService Ready=True |
-| DeepSeek R1 1.5B w8a8 | Serving | 12–17 tok/s · chain-of-thought confirmed |
+| Component | Notes |
+|-----------|-------|
+| OpenShift 4.21 UPI | Connected UPI · self-hosted DNS + LB |
+| NVIDIA GPU Operator | Driver 580.126.20 · DCGM metrics live |
+| RHOAI 3.4.0 | DataScienceCluster reconciled |
+| MinIO AIStor | In-cluster S3 · 899 GB capacity |
+| KServe RawDeployment | InferenceService Ready=True |
+| DeepSeek R1 1.5B w8a8 | 12–17 tok/s · chain-of-thought confirmed |
+
 
 ---
 
@@ -136,14 +137,15 @@ at the cost of manual provisioning.
 
 ### Stack
 
-| Layer | Operator / Tool | Version | Status | Notes |
-|-------|----------------|---------|--------|-------|
-| Node Feature Discovery | NFD Operator | 4.21.0 | Running | Auto-labels GPU nodes · feeds GPU Operator |
-| GPU Enablement | NVIDIA GPU Operator | 26.3.2 | Running | Driver 580.126.20 · DaemonSet on worker1 |
-| GPU Monitoring | DCGM Exporter | 26.3.2 | Running | Live metrics via Prometheus · DCGM_FI_DEV_GPU_UTIL |
-| GPU Sharing | NVIDIA Device Plugin | 26.3.2 | Running | Time-slicing · 2 schedulable slices per GPU |
-| AI Platform | Red Hat OpenShift AI | 3.4.0 | Running | DataScienceCluster reconciled · dashboard live |
-| Model Serving | KServe · vLLM ServingRuntime | v0.18.0 | Running | InferenceService Ready=True · RawDeployment mode |
-| S3 Object Storage | MinIO AIStor Operator | 2026.4.13 | Running | In-cluster S3 · 899 GB capacity |
-| Persistent Storage | Local Storage Operator | 4.21.0 | Running | LocalVolumeSet · 3 PVs across worker nodes |
+| Layer | Operator / Tool | Version | Notes |
+|-------|----------------|---------|-------|
+| Node Feature Discovery | NFD Operator | 4.21.0 | Auto-labels GPU nodes · feeds GPU Operator |
+| GPU Enablement | NVIDIA GPU Operator | 26.3.2 | Driver 580.126.20 · DaemonSet on worker1 |
+| GPU Monitoring | DCGM Exporter | 26.3.2 | Live metrics via Prometheus · DCGM_FI_DEV_GPU_UTIL |
+| GPU Sharing | NVIDIA Device Plugin | 26.3.2 | Time-slicing · 2 schedulable slices per GPU |
+| AI Platform | Red Hat OpenShift AI | 3.4.0 | DataScienceCluster reconciled · dashboard live |
+| Model Serving | KServe · vLLM ServingRuntime | v0.18.0 | InferenceService Ready=True · RawDeployment mode |
+| Object Storage | MinIO AIStor Operator | 2026.4.13 | In-cluster S3 · 899 GB capacity |
+| Persistent Storage | Local Storage Operator | 4.21.0 | LocalVolumeSet · 3 PVs across worker nodes |
+| Service Mesh | OpenShift Service Mesh | 3.2.0 | Required by RHOAI gateway components |
 
