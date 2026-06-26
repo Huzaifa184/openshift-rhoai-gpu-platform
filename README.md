@@ -13,7 +13,7 @@ Production-pattern OpenShift AI 3.4.0 platform, self-hosted on bare-metal ESXi, 
 | NVIDIA GPU Operator | Driver 580.126.20 with DCGM metrics  |
 | Redhat Openshift AI 3.4.0 | DataScienceCluster with dashboard  |
 | MinIO AIStor | In-cluster S3 · 899 GB capacity |
-| KServe RawDeployment | InferenceService Ready=True |
+| KServe RawDeployment | InferenceService  |
 | DeepSeek R1 1.5B w8a8 | 12–17 tok/s with chain-of-thought reasoning confirmed |
 
 ---
