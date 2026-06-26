@@ -1,4 +1,4 @@
-# Red Hat OpenShift AI — GPU Platform
+# Red Hat OpenShift AI : GPU Platform
 
 Production-pattern OpenShift AI 3.4.0 cluster on bare-metal ESXi with GPU passthrough,
 KServe model serving, and a verified DeepSeek R1 inference endpoint.
@@ -25,13 +25,13 @@ No managed control plane. No cloud GPU credits. No abstractions hiding the failu
 
 ### Infrastructure topology
 
-**Hybrid hypervisor — deliberate, not default.**
+**Hybrid hypervisor : deliberate, not default.**
 Master nodes run nested inside VMware Workstation Pro on a Windows laptop.
 Worker nodes run on bare-metal ESXi on a separate physical workstation.
-The GPU-bearing worker (worker1) is on bare-metal ESXi — the only viable path
+The GPU-bearing worker (worker1) is on bare-metal ESXi : the only viable path
 for PCI passthrough on consumer hardware.
 
-**Connected UPI — not IPI.**
+**Connected UPI : not IPI.**
 Self-hosted HAProxy and BIND9. Mirrors the install pattern in regulated environments
 where infrastructure is explicitly managed rather than abstracted away.
 Full control over DNS and load-balancing at the cost of manual provisioning.
@@ -66,4 +66,4 @@ curl -k -X POST \
   }'
 ```
 
-### GPU configuration (GTX 1660 Super — 6GB Turing)
+### GPU configuration (GTX 1660 Super : 6GB Turing)
