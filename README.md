@@ -574,8 +574,37 @@ oc logs <pod-name> -n deepseek-reasoning-demo -c kserve-container | head -20
 # Model loading took 2.13 GiB memory
 # Available KV cache memory: 2.46 GiB
 # Application startup complete.
+```
 
-# Functional inference test — stripped response
+### Live Inference Test
+
+**Question:** What is 15% of 280?
+
+**Raw API response** — full JSON including chain-of-thought:
+
+```bash
+curl -k -X POST \
+  "https://deepseek-r1-distill-qwen-15b-deepseek-reasoning-demo.apps.openshift-ai.huzaifa.lab/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-r1-distill-qwen-15b",
+    "messages": [{"role":"user","content":"What is 15% of 280?"}],
+    "max_tokens": 256,
+    "temperature": 0.6
+  }' | python3 -m json.tool
+```
+
+DeepSeek R1 is a reasoning model — it thinks before answering. The `<think>` block in the response contains the internal chain-of-thought process, visible in the raw output:
+
+```
+"content": "First, I need to understand what the question is asking...
+15% is equivalent to 0.15. Next, I'll multiply the decimal by 280...
+Therefore, 15% of 280 is 42.\n</think>\n\nTo find 15% of 280..."
+```
+
+**Stripped response** — answer only, chain-of-thought removed:
+
+```bash
 curl -k -s -X POST \
   "https://deepseek-r1-distill-qwen-15b-deepseek-reasoning-demo.apps.openshift-ai.huzaifa.lab/v1/chat/completions" \
   -H "Content-Type: application/json" \
@@ -594,6 +623,19 @@ print('Answer:', msg)
 print(f'Tokens — prompt: {usage[\"prompt_tokens\"]} · completion: {usage[\"completion_tokens\"]} · total: {usage[\"total_tokens\"]}')
 "
 ```
+
+```
+Answer: To find 15% of 280, follow these steps:
+
+1. Convert the percentage to a decimal: 15% = 0.15
+2. Multiply: 0.15 × 280 = 42
+
+Answer: 42
+
+Tokens — prompt: 17 · completion: 218 · total: 235
+```
+
+**Confirmed:** HTTP 200 · finish_reason: stop · OpenAI-compatible endpoint · running on GTX 1660 Super via KServe RawDeployment on RHOAI 3.4.0.
 
 <img width="892" height="373" alt="image" src="https://github.com/user-attachments/assets/b9fd2d4c-1825-4edc-aba1-3b754fe0dbec" />
 
