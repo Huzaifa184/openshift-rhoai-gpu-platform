@@ -95,33 +95,24 @@ Production-pattern OpenShift AI 3.4.0 platform, self-hosted on bare-metal ESXi, 
 
 ### Topology
 
-**Hybrid hypervisor : **
+**Hybrid hypervisor — deliberate, not default.**
 Master nodes run nested inside VMware Workstation Pro on a Windows laptop.
 Worker nodes run on bare-metal ESXi on a separate physical workstation.
-The GPU-bearing worker (worker1) is on bare-metal ESXi : the only viable path
-for PCI passthrough on consumer hardware.
+The GPU-bearing worker (worker1) is on bare-metal ESXi — the only viable path for PCI passthrough on consumer hardware.
 
-**Connected UPI : **
-Self-hosted HAProxy and BIND9 on a dedicated RHEL 10 bastion node. Mirrors the
-install pattern used in regulated environments where infrastructure is explicitly
-managed rather than abstracted away. Full control over DNS and load-balancing
-at the cost of manual provisioning.
+**Connected UPI — not IPI.**
+Self-hosted HAProxy and BIND9 on a dedicated RHEL 10 bastion node. Mirrors the install pattern used in regulated environments where infrastructure is explicitly managed rather than abstracted away.
 
 ### Infrastructure Setup
 
-- **Static IP allocation** : All nodes (masters, workers, bastion) assigned static IPs on the internal network prior to installation. No DHCP dependency ensures predictable DNS resolution and HAProxy backend targeting across reboots.
-
-- **Bridged networking on VMware Workstation Pro** : Master node VMs configured with bridged network adapters, placing them directly on the physical LAN segment alongside the ESXi-hosted workers. Required for OVN-Kubernetes and the OpenShift API VIP to function correctly across the hybrid topology.
-
-- **Bastion node (RHEL 10 VM on Workstation Pro)** : Single VM serving three roles:
-  - **HAProxy** : Layer 4 load balancer handling API (6443), Machine Config (22623), and ingress (80/443) VIPs.
-  - **BIND9 (named)** : Authoritative DNS for the `openshift-ai.huzaifa.lab` zone. Forward and reverse lookup zones for all cluster nodes, API VIP, and wildcard ingress (`*.apps`).
-  - **Apache httpd** : Served RHCOS ignition files during UPI bootstrap. Nodes pulled ignition over HTTP on first boot.
-
-- **UPI install flow** : `install-config.yaml` customised before manifest generation. Ignition configs produced via `openshift-install create ignition-configs`. RHCOS nodes booted from ISO and bootstrapped in sequence: bootstrap → masters (etcd quorum) → workers → bootstrap removed.
-
-- **Configuration files** : Redacted versions of `install-config.yaml`, `haproxy.cfg`, `named.conf`, and forward/reverse zone files available in [`infra/`](infra/).
-
+- **Static IP allocation:** All nodes assigned static IPs prior to installation. No DHCP dependency ensures predictable DNS resolution and HAProxy backend targeting across reboots.
+- **Bridged networking on Workstation Pro:** Master VMs placed directly on the physical LAN segment alongside ESXi workers. Required for OVN-Kubernetes and the API VIP to function across the hybrid topology.
+- **Bastion node (RHEL 10):** Single VM serving three roles:
+  - **HAProxy:** Layer 4 load balancer — API :6443, MCS :22623, ingress :80/:443
+  - **BIND9:** Authoritative DNS for `openshift-ai.huzaifa.lab` — forward + reverse zones, wildcard `*.apps`
+  - **Apache httpd:** Served RHCOS ignition files during UPI bootstrap
+- **UPI install flow:** `install-config.yaml` → manifests → ignition configs → ISO boot → bootstrap → masters → workers → bootstrap removed
+- **Configuration files:** Redacted `install-config.yaml`, `haproxy.cfg`, `named.conf`, zone files in [`infra/`](infra/)
 ### Stack
 
 | Layer | Operator / Tool | Version | Notes |
