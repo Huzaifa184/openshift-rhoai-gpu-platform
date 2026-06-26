@@ -1,6 +1,6 @@
 # Red Hat OpenShift AI : GPU Platform
 
-Production-pattern OpenShift AI platform — bare metal, no cloud dependency.
+Production-pattern OpenShift AI platform, self-hosted, no cloud dependency.
 
 - OpenShift 4.21 · Connected UPI · hybrid hypervisor (ESXi + Workstation Pro)
 - GPU NVIDIA GTX 1660 Super · PCI passthrough · RHCOS worker node
