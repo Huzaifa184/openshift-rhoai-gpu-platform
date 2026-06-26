@@ -149,3 +149,22 @@ at the cost of manual provisioning.
 | Persistent Storage | Local Storage Operator | 4.21.0 | LocalVolumeSet · 3 PVs across worker nodes |
 | Service Mesh | OpenShift Service Mesh | 3.2.0 | Required by RHOAI gateway components |
 
+----
+## Storage
+
+Two storage layers: local persistent volumes for stateful workloads, and MinIO AIStor as the in-cluster S3-compatible object store for model artifacts.
+
+### Local Storage Operator
+
+Raw disks on each worker node are provisioned as PersistentVolumes using the Local Storage Operator. A `LocalVolumeSet` watches nodes labelled `storage=local` and automatically creates PVs from any available disk — rotational or non-rotational.
+
+
+### MinIO AIStor
+
+MinIO AIStor is the in-cluster S3-compatible object store used as the model artifact backend for RHOAI. It replaced MinIO Community Edition, which was archived in February 2026.
+
+**Why AIStor over NooBaa/MCG:**
+NooBaa (the default MCG backend in OpenShift) is designed for multi-cloud object gateway use cases and adds significant operational overhead. AIStor Free tier (launched December 2025) is a cost-free, single-node-capable S3 implementation that integrates cleanly with RHOAI data connections and the KServe storage initializer.
+
+
+
