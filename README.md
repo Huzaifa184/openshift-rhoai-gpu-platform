@@ -8,7 +8,7 @@ No managed control plane. No cloud GPU credits. No abstractions hiding the failu
 
 ## Platform Status
 
-| Component | Status | Verified |
+| Component | Status | Comments |
 |-----------|--------|----------|
 | OpenShift 4.21 UPI | Running | Connected, self-hosted DNS + LB |
 | NVIDIA GPU Operator | Running | Driver 580.126.20 · DCGM metrics live |
