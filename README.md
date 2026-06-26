@@ -338,35 +338,35 @@ oc get hardwareprofile gtx1660super-gpu -n redhat-ods-applications
 
 The GTX 1660 Super is passed through from the ESXi host to `worker1` using VMware DirectPath I/O. This gives the RHCOS VM direct hardware access : a requirement for NVIDIA driver loading and CUDA initialisation on an immutable RHCOS node.
 
-**1 : Enable VT-d / IOMMU** in BIOS on the Dell T5810.
+**1. Enable VT-d / IOMMU** in BIOS on the Dell T5810.
 
-**2 : Enable passthrough in ESXI:**
+**2. Enable passthrough in ESXI:**
 Navigate to host → Configure → Hardware → PCI Devices → enable passthrough on the GTX 1660 Super. Reboot the host.
 
-**3 : Disable nested virtualisation on the worker1 VM:**
+**3. Disable nested virtualisation on the worker1 VM:**
 PCI passthrough and nested hardware-assisted virtualisation cannot coexist on the same VM.
 
 ```
 VM Settings → CPU → uncheck "Expose hardware-assisted virtualization to the guest OS"
 ```
 
-**4 : Reserve all VM memory:**
+**4. Reserve all VM memory:**
 Passthrough devices DMA directly into guest memory. The hypervisor cannot swap or balloon that memory : it must be fully pinned.
 
 ```
 VM Settings → Memory → enable "Reserve all guest memory (All locked)"
 ```
 
-**5 : Suppress hypervisor detection:**
+**5. Suppress hypervisor detection:**
 The Problem: NVIDIA consumer drivers (GeForce) are hypervisor-aware and will typically throw Error 43 inside a virtual machine, unless the hypervisor signature is hidden. 
 
-Solution: Add via vSphere → VM Options → Advanced → Edit Configuration:
+Solution: Add via Esxi → VM Options → Advanced → Edit Configuration:
 
 ```
 hypervisor.cpuid.v0 = "FALSE"
 ```
 
-**6 : Add PCI device to VM** and power on. Verify inside the guest:
+**6. Add PCI device to VM** and power on. Verify inside the guest:
 
 ```bash
 lspci | grep -i nvidia
