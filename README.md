@@ -373,13 +373,13 @@ nvidia-smi
 
 Time-slicing exposes a single physical GPU as multiple schedulable resources. Two slices are configured : two pods can concurrently request `nvidia.com/gpu: 1` from the same card. No memory isolation, shared fault domain.
 
-**MIG (Multi-Instance GPU)** partitions a GPU into isolated instances with dedicated compute and memory. Hardware-enforced isolation, no interference between workloads. The correct enterprise choice — but requires Ampere architecture (SM ≥ 8.0). The GTX 1660 Super is Turing (SM 7.5). MIG is not available on this hardware.
+**MIG (Multi-Instance GPU)** partitions a GPU into isolated instances with dedicated compute and memory. Hardware-enforced isolation, no interference between workloads. The correct enterprise choice : but requires Ampere architecture (SM ≥ 8.0). The GTX 1660 Super is Turing (SM 7.5). MIG is not available on this hardware.
 
-**MPS (Multi-Process Service)** shares a single CUDA context across multiple processes, reducing context switch overhead. Documented as supported on Kubernetes. However, there is a known open issue specific to OpenShift: MPS test pods report success but only one process executes on the GPU at a time — the sharing does not actually occur. Red Hat and NVIDIA have an open item on this. MPS was evaluated and ruled out before implementation, not discovered as a failure mid-deployment.
+**MPS (Multi-Process Service)** shares a single CUDA context across multiple processes, reducing context switch overhead. Documented as supported on Kubernetes. However, there is a known open issue specific to OpenShift: MPS test pods report success but only one process executes on the GPU at a time : the sharing does not actually occur. Red Hat and NVIDIA have an open item on this. MPS was evaluated and ruled out before implementation, not discovered as a failure mid-deployment.
 
 **Why time-slicing over MIG and MPS:**
 
-**Time-slicing** was the remaining viable option. It round-robins GPU access between processes at a configurable interval. No memory isolation, shared fault domain — a pod crash can affect co-located workloads. Acceptable for a single-user lab where both slices are unlikely to be active simultaneously. Two slices are configured, matching the hardware profile `maxCount` and leaving room for a second workload without contention at idle.
+**Time-slicing** was the remaining viable option. It round-robins GPU access between processes at a configurable interval. No memory isolation, shared fault domain : a pod crash can affect co-located workloads. Acceptable for a single-user lab where both slices are unlikely to be active simultaneously. Two slices are configured, matching the hardware profile `maxCount` and leaving room for a second workload without contention at idle.
 
 
 
