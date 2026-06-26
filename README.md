@@ -285,6 +285,10 @@ https://rh-ai.apps.openshift-ai.huzaifa.lab
 
 Authentication via OpenShift OAuth. Hardware profiles, serving runtimes, and model deployments are managed through the dashboard or via CLI against `redhat-ods-applications`.
 
+<img width="950" height="490" alt="image" src="https://github.com/user-attachments/assets/f0711c50-c320-4a65-a25b-0a1eb65b1dc5" />
+
+
+
 ### Hardware Profile
 
 Hardware profiles replace Accelerator Profiles (deprecated in RHOAI 2.19). The `gtx1660super-gpu` profile exposes the GTX 1660 Super to RHOAI workloads and constrains resource requests to what the node can actually provide.
@@ -294,6 +298,9 @@ Manifest: [`manifests/rhoai/hardwareprofile.yaml`](manifests/rhoai/hardwareprofi
 ```bash
 oc get hardwareprofile gtx1660super-gpu -n redhat-ods-applications
 ```
+<img width="938" height="409" alt="image" src="https://github.com/user-attachments/assets/8271b8bd-d0ad-4a0e-8417-10faaf58ca54" />
+
+<img width="812" height="404" alt="image" src="https://github.com/user-attachments/assets/574f3dc7-a416-49fe-acb3-b190a612950d" />
 
 ---
 
@@ -495,6 +502,9 @@ Endpoint: https://minio.aistor.svc.cluster.local:9000
 Bucket:   ai-initial
 Region:   us-east-1
 ```
+
+<img width="943" height="254" alt="image" src="https://github.com/user-attachments/assets/d654fb5b-bda4-4d7b-a8b4-a42a359559b6" />
+
 
 ### ServingRuntime
 
