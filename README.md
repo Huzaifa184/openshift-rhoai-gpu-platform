@@ -184,6 +184,9 @@ oc get secret ai-minio-generated -n aistor \
   -o jsonpath='{.data.config\.env}' | base64 -d | grep -E "ROOT_USER|ROOT_PASSWORD"
 ```
 
+<img width="956" height="510" alt="image" src="https://github.com/user-attachments/assets/1396d01b-8e68-4ea0-a34f-c800ec1a65c5" />
+
+
 Model artifact bucket layout:
 
 ```
