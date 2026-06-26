@@ -97,13 +97,13 @@ Production-pattern OpenShift AI platform, self-hosted, no cloud dependency.
 
 ### Topology
 
-**Hybrid hypervisor : deliberate, not default.**
+**Hybrid hypervisor : **
 Master nodes run nested inside VMware Workstation Pro on a Windows laptop.
 Worker nodes run on bare-metal ESXi on a separate physical workstation.
 The GPU-bearing worker (worker1) is on bare-metal ESXi : the only viable path
 for PCI passthrough on consumer hardware.
 
-**Connected UPI : not IPI.**
+**Connected UPI : **
 Self-hosted HAProxy and BIND9 on a dedicated RHEL 10 bastion node. Mirrors the
 install pattern used in regulated environments where infrastructure is explicitly
 managed rather than abstracted away. Full control over DNS and load-balancing
@@ -145,7 +145,7 @@ at the cost of manual provisioning.
 Two storage layers: local persistent volumes for stateful workloads, and MinIO AIStor as the in-cluster S3-compatible object store for model artifacts.
 
 ### Local Storage Operator
-Go to ESXI host and attach 900GB disk from the datastore to each worker (thin provisioning does the magic of allocating more than available, since I am only using worker 1 mainly for AI workloads,I am safe here)
+From ESXI host and attach 900GB disk from the datastore to each worker (thin provisioning does the magic of allocating more than available, since I am only using worker 1 mainly for AI workloads,I am safe here)
 
 Raw disks on each worker node are provisioned as PersistentVolumes using the Local Storage Operator. A `LocalVolumeSet` watches nodes labelled `storage=local` and automatically creates PVs from any available disk : rotational or non-rotational.
 
@@ -554,7 +554,7 @@ oc patch deployment deepseek-r1-distill-qwen-15b-predictor \
 | CPU | 1 core | 2 cores | ~0.9 cores during inference |
 | Memory | 2 GiB | 6 GiB | ~3.5 GiB |
 | GPU | 1 | 1 | 1 (full device) |
-| GPU VRAM | : | 6 GB | ~4.6 GB (weights + KV cache) |
+| GPU VRAM | - | 6 GB | ~4.6 GB (weights + KV cache) |
 
 VRAM breakdown:
 
