@@ -632,7 +632,7 @@ Answer: To find 15% of 280, follow these steps:
 
 Answer: 42
 
-Tokens — prompt: 17 · completion: 218 · total: 235
+Tokens — prompt: 17 · completion: 222 · total: 239
 ```
 
 **Confirmed:** HTTP 200 · finish_reason: stop · OpenAI-compatible endpoint · running on GTX 1660 Super via KServe RawDeployment on RHOAI 3.4.0.
