@@ -3,7 +3,7 @@
 Production-pattern OpenShift AI platform — bare metal, no cloud dependency.
 
 - OpenShift 4.21 · Connected UPI · hybrid hypervisor (ESXi + Workstation Pro)
-- GTX 1660 Super · PCI passthrough · RHCOS worker node
+- GPU NVIDIA GTX 1660 Super · PCI passthrough · RHCOS worker node
 - RHOAI 3.4.0 · KServe RawDeployment · vLLM 0.18.0
 - DeepSeek R1 1.5B w8a8 · 12–17 tok/s · 6 GB consumer GPU
 
