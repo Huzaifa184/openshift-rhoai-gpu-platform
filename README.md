@@ -575,18 +575,29 @@ oc logs <pod-name> -n deepseek-reasoning-demo -c kserve-container | head -20
 # Available KV cache memory: 2.46 GiB
 # Application startup complete.
 
-# Functional inference test
-curl -k -X POST \
+# Functional inference test — stripped response
+curl -k -s -X POST \
   "https://deepseek-r1-distill-qwen-15b-deepseek-reasoning-demo.apps.openshift-ai.huzaifa.lab/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "deepseek-r1-distill-qwen-15b",
-    "messages": [{"role":"user","content":"What is 17 times 23? Think step by step."}],
-    "max_tokens": 512,
+    "messages": [{"role":"user","content":"What is 15% of 280?"}],
+    "max_tokens": 256,
     "temperature": 0.6
-  }' | python3 -m json.tool
-# HTTP 200 · chain-of-thought in content · answer: 391 · ~12–17 tok/s
+  }' | python3 -c "
+import sys, json, re
+r = json.load(sys.stdin)
+msg = r['choices'][0]['message']['content']
+msg = re.sub(r'<think>.*?</think>', '', msg, flags=re.DOTALL).strip()
+usage = r['usage']
+print('Answer:', msg)
+print(f'Tokens — prompt: {usage[\"prompt_tokens\"]} · completion: {usage[\"completion_tokens\"]} · total: {usage[\"total_tokens\"]}')
+"
+```
 
+<img width="892" height="373" alt="image" src="https://github.com/user-attachments/assets/b9fd2d4c-1825-4edc-aba1-3b754fe0dbec" />
+
+---
 
 ## Frontend
 
