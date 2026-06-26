@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepSeek R1 — OpenShift AI Lab</title>
+<style>
+  :root {
+    --bg:        #0a0e1a;
+    --surface:   #111827;
+    --surface2:  #1a2235;
+    --border:    #1e3a5f;
+    --cyan:      #06b6d4;
+    --cyan-dim:  #0891b2;
+    --navy:      #1e40af;
+    --text:      #e2e8f0;
+    --text-dim:  #94a3b8;
+    --red:       #ef4444;
+    --green:     #10b981;
+    --amber:     #f59e0b;
+    --radius:    8px;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--cyan), var(--navy));
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800; color: white;
+  }
+  .header-title { font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+  .header-sub { font-size: 11px; color: var(--text-dim); }
+
+  .header-right { display: flex; align-items: center; gap: 8px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .badge-green  { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
+  .badge-cyan   { background: rgba(6,182,212,.12);  color: var(--cyan);  border: 1px solid rgba(6,182,212,.25); }
+  .badge-amber  { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.25); }
+  .badge-red    { background: rgba(239,68,68,.12);  color: var(--red);   border: 1px solid rgba(239,68,68,.25); }
+  .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  /* ── Config panel ── */
+  .config-bar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex; align-items: center; gap: 16px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .config-label { font-size: 11px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .config-input {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: var(--radius);
+    padding: 5px 10px; font-size: 12px; outline: none;
+    font-family: var(--font-mono);
+  }
+  .config-input:focus { border-color: var(--cyan); }
+  .config-input.wide { width: 340px; }
+  .config-input.narrow { width: 80px; }
+  .toggle-group { display: flex; gap: 4px; }
+  .toggle-btn {
+    padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-dim);
+    font-size: 11px; cursor: pointer; transition: all .15s;
+  }
+  .toggle-btn.active { background: var(--cyan); border-color: var(--cyan); color: #000; font-weight: 700; }
+
+  /* ── Main layout ── */
+  .main {
+    display: flex; flex: 1; overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    flex-shrink: 0;
+  }
+  .sidebar-header {
+    padding: 12px 14px 8px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text-dim); font-weight: 700;
+  }
+  .new-chat-btn {
+    margin: 0 10px 8px;
+    background: rgba(6,182,212,.1); border: 1px dashed var(--cyan-dim);
+    color: var(--cyan); border-radius: var(--radius);
+    padding: 7px 12px; cursor: pointer; font-size: 12px; font-weight: 600;
+    text-align: left; transition: all .15s;
+  }
+  .new-chat-btn:hover { background: rgba(6,182,212,.2); }
+
+  .chat-history { flex: 1; overflow-y: auto; padding: 4px 8px; }
+  .history-item {
+    padding: 7px 8px; border-radius: 6px; cursor: pointer;
+    font-size: 12px; color: var(--text-dim); margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: background .1s;
+  }
+  .history-item:hover { background: var(--surface2); color: var(--text); }
+  .history-item.active { background: var(--surface2); color: var(--cyan); }
+
+  .sidebar-footer {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-dim);
+  }
+  .model-info { font-family: var(--font-mono); color: var(--cyan); font-size: 10px; }
+
+  /* ── Chat area ── */
+  .chat-area {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  .messages {
+    flex: 1; overflow-y: auto; padding: 24px 0;
+    scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .message-row {
+    display: flex; gap: 14px; padding: 8px 24px;
+    max-width: 900px; margin: 0 auto; width: 100%;
+  }
+  .message-row.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; margin-top: 2px;
+  }
+  .avatar-ai   { background: linear-gradient(135deg,#0891b2,#1e40af); color: white; }
+  .avatar-user { background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); }
+
+  .bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    line-height: 1.65;
+    font-size: 13.5px;
+  }
+  .bubble-ai {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px 12px 12px 12px;
+  }
+  .bubble-user {
+    background: var(--navy);
+    border: 1px solid rgba(30,64,175,.6);
+    border-radius: 12px 4px 12px 12px;
+    color: #dbeafe;
+  }
+
+  /* thinking block */
+  .thinking-block {
+    background: rgba(6,182,212,.04);
+    border: 1px solid rgba(6,182,212,.15);
+    border-left: 3px solid var(--cyan-dim);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  .thinking-block .think-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--cyan); font-style: normal; font-weight: 700;
+    display: block; margin-bottom: 4px;
+  }
+
+  /* search result citations */
+  .search-results-bar {
+    background: rgba(245,158,11,.05);
+    border: 1px solid rgba(245,158,11,.2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--amber);
+  }
+  .search-results-bar a {
+    color: var(--cyan); text-decoration: none;
+    display: inline-block; margin-right: 8px;
+  }
+  .search-results-bar a:hover { text-decoration: underline; }
+
+  /* code blocks inside bubbles */
+  .bubble pre {
+    background: #0a0e1a;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .bubble code { font-family: var(--font-mono); font-size: 12px; }
+  .bubble p { margin-bottom: 8px; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul, .bubble ol { padding-left: 20px; margin: 6px 0; }
+  .bubble li { margin-bottom: 4px; }
+
+  /* token count */
+  .meta-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 0; margin-top: 6px;
+    font-size: 10px; color: var(--text-dim);
+  }
+  .meta-row span { display: flex; align-items: center; gap: 3px; }
+
+  /* Typing indicator */
+  .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+  .typing-dot {
+    width:6px; height:6px; border-radius:50%; background: var(--cyan);
+    animation: pulse 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: .2s; }
+  .typing-dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes pulse {
+    0%, 100% { opacity: .3; transform: scale(.8); }
+    50%       { opacity: 1;  transform: scale(1.1); }
+  }
+
+  /* ── Input area ── */
+  .input-area {
+    border-top: 1px solid var(--border);
+    padding: 14px 24px 16px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .input-row {
+    display: flex; gap: 10px; align-items: flex-end;
+    max-width: 900px; margin: 0 auto;
+  }
+  .input-wrap {
+    flex: 1; background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    transition: border-color .15s;
+    display: flex; align-items: flex-end; gap: 8px;
+  }
+  .input-wrap:focus-within { border-color: var(--cyan); }
+
+  #user-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 14px; resize: none;
+    font-family: inherit; line-height: 1.5;
+    max-height: 120px; overflow-y: auto;
+  }
+  #user-input::placeholder { color: var(--text-dim); }
+
+  .send-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--cyan); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all .15s;
+    color: #000;
+  }
+  .send-btn:hover:not(:disabled) { background: #22d3ee; }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn svg { width:16px; height:16px; fill:currentColor; }
+
+  .input-hints {
+    display: flex; gap: 6px; justify-content: center;
+    margin-top: 8px; flex-wrap: wrap;
+    max-width: 900px; margin: 8px auto 0;
+  }
+  .hint-chip {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); border-radius: 20px;
+    padding: 3px 10px; font-size: 11px; cursor: pointer;
+    transition: all .15s;
+  }
+  .hint-chip:hover { background: rgba(6,182,212,.1); color: var(--cyan); border-color: var(--cyan-dim); }
+
+  /* Welcome screen */
+  .welcome {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; gap: 20px; padding: 40px 24px; text-align: center;
+  }
+  .welcome-logo {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, var(--cyan), var(--navy));
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .welcome h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .welcome p { color: var(--text-dim); max-width: 460px; line-height: 1.6; }
+  .welcome-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    max-width: 520px; width: 100%;
+  }
+  .welcome-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s, background .15s;
+  }
+  .welcome-card:hover { border-color: var(--cyan-dim); background: var(--surface2); }
+  .welcome-card .card-icon { font-size: 18px; margin-bottom: 6px; }
+  .welcome-card .card-title { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .welcome-card .card-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* stats bar */
+  .stats-bar {
+    display: flex; gap: 16px; align-items: center;
+    padding: 6px 24px;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .stat { display: flex; align-items: center; gap: 5px; }
+  .stat-val { color: var(--cyan); font-family: var(--font-mono); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-left">
+    <div class="logo">DS</div>
+    <div>
+      <div class="header-title">DeepSeek R1 · OpenShift AI Lab</div>
+      <div class="header-sub">vLLM · GTX 1660 Super · RHOAI 3.4.0</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-green"><span class="dot"></span>GPU Active</span>
+    <span class="badge badge-cyan" id="model-badge">1.5B-w8a8</span>
+    <span class="badge badge-amber" id="search-badge"><span class="dot"></span>Web Search ON</span>
+  </div>
+</header>
+
+<!-- Config bar -->
+<div class="config-bar">
+  <span class="config-label">Endpoint</span>
+  <input class="config-input wide" id="endpoint" type="text"
+    value="http://rh-ai.apps.openshift-ai.huzaifa.lab/v1"
+    placeholder="http://<inference-route>/v1" />
+
+  <span class="config-label">Model</span>
+  <input class="config-input" id="model-name" type="text"
+    style="width:220px"
+    value="deepseek-r1-distill-qwen-15b"
+    placeholder="model name" />
+
+  <span class="config-label">Temp</span>
+  <input class="config-input narrow" id="temperature" type="number" min="0" max="2" step="0.05" value="0.6" />
+
+  <span class="config-label">Max Tokens</span>
+  <input class="config-input narrow" id="max-tokens" type="number" min="128" max="4096" step="64" value="2048" />
+
+  <span class="config-label">Web Search</span>
+  <div class="toggle-group">
+    <button class="toggle-btn active" id="search-on" onclick="setSearch(true)">ON</button>
+    <button class="toggle-btn" id="search-off" onclick="setSearch(false)">OFF</button>
+  </div>
+
+  <span class="config-label">Think</span>
+  <div class="toggle-group">
+    <button class="toggle-btn active" id="think-on" onclick="setThink(true)">Show</button>
+    <button class="toggle-btn" id="think-off" onclick="setThink(false)">Hide</button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">Conversations</div>
+    <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+    <div class="chat-history scrollbar-thin" id="chat-history"></div>
+    <div class="sidebar-footer">
+      <div style="margin-bottom:4px; font-size:11px;">Running on</div>
+      <div class="model-info">GTX 1660 Super · 6GB</div>
+      <div class="model-info" style="color:var(--text-dim);">VRAM util: <span id="vram-stat">—</span></div>
+    </div>
+  </div>
+
+  <!-- Chat area -->
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome-screen">
+        <div class="welcome-logo">🧠</div>
+        <h1>DeepSeek R1 Reasoning Chat</h1>
+        <p>Running on your OpenShift AI home lab — GTX 1660 Super, fully on-prem, zero cloud dependencies.</p>
+        <div class="welcome-grid">
+          <div class="welcome-card" onclick="sendPrompt('Explain the architecture of a transformer model. Show chain-of-thought reasoning.')">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Reasoning Demo</div>
+            <div class="card-desc">Test R1's chain-of-thought on a technical question</div>
+          </div>
+          <div class="welcome-card" onclick="sendPrompt('Search: What are the latest updates to Red Hat OpenShift AI in 2025-2026?')">
+            <div class="card-icon">🔍</div>
+            <div class="card-title">Web Search</div>
+            <div class="card-desc">Query current knowledge beyond training cutoff</div>
+          </div>
+          <div class="welcome-card" onclick="sendPrompt('Write a Python function to detect credit card fraud using a RandomForest classifier with SMOTE oversampling.')">
+            <div class="card-icon">💻</div>
+            <div class="card-title">Code Generation</div>
+            <div class="card-desc">Generate production-ready code with reasoning</div>
+          </div>
+          <div class="welcome-card" onclick="sendPrompt('If a train leaves at 9am at 120km/h and another at 10am at 160km/h on parallel tracks — when does the second overtake the first?')">
+            <div class="card-icon">🧮</div>
+            <div class="card-title">Math Reasoning</div>
+            <div class="card-desc">Watch the model reason through a problem step by step</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <div class="input-wrap">
+          <textarea id="user-input" rows="1"
+            placeholder="Ask anything — prefix with 'Search:' to force web augmentation…"
+            onkeydown="handleKey(event)"
+            oninput="autoResize(this)"></textarea>
+        </div>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="input-hints">
+        <span class="hint-chip" onclick="sendPrompt('Explain RHOAI KServe InferenceService scheduling with GPU node affinity')">RHOAI KServe</span>
+        <span class="hint-chip" onclick="sendPrompt('Search: vLLM latest benchmarks 2025 GPU memory optimization')">vLLM benchmarks</span>
+        <span class="hint-chip" onclick="sendPrompt('Write a bash script to check OpenShift operator health across all namespaces')">OC health script</span>
+        <span class="hint-chip" onclick="sendPrompt('What is the difference between GPTQ and AWQ quantization for LLM inference?')">Quantization types</span>
+        <span class="hint-chip" onclick="sendPrompt('Search: DeepSeek R1 architecture paper key innovations')">DeepSeek paper</span>
+      </div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <span class="stat">Tokens in: <span class="stat-val" id="tok-in">0</span></span>
+      <span class="stat">Tokens out: <span class="stat-val" id="tok-out">0</span></span>
+      <span class="stat">Latency: <span class="stat-val" id="latency">—</span></span>
+      <span class="stat">TPS: <span class="stat-val" id="tps">—</span></span>
+      <span class="stat" style="margin-left:auto;">Session turns: <span class="stat-val" id="turn-count">0</span></span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+let conversations = {}; // id -> {title, messages[]}
+let currentId = null;
+let webSearch = true;
+let showThinking = true;
+let totalTokIn = 0, totalTokOut = 0, turnCount = 0;
+
+// ── Controls ──
+function setSearch(v) {
+  webSearch = v;
+  document.getElementById('search-on').classList.toggle('active', v);
+  document.getElementById('search-off').classList.toggle('active', !v);
+  document.getElementById('search-badge').className = v ? 'badge badge-amber' : 'badge badge-red';
+  document.getElementById('search-badge').innerHTML = v
+    ? '<span class="dot"></span>Web Search ON'
+    : '<span class="dot"></span>Web Search OFF';
+}
+
+function setThink(v) {
+  showThinking = v;
+  document.getElementById('think-on').classList.toggle('active', v);
+  document.getElementById('think-off').classList.toggle('active', !v);
+  document.querySelectorAll('.thinking-block').forEach(el => {
+    el.style.display = v ? '' : 'none';
+  });
+}
+
+// ── Conversations ──
+function newChat() {
+  const id = Date.now().toString();
+  conversations[id] = { title: 'New Chat', messages: [] };
+  currentId = id;
+  renderHistory();
+  clearMessages();
+}
+
+function switchChat(id) {
+  currentId = id;
+  renderHistory();
+  renderMessages(conversations[id].messages);
+}
+
+function renderHistory() {
+  const el = document.getElementById('chat-history');
+  el.innerHTML = Object.entries(conversations)
+    .reverse()
+    .map(([id, c]) => `
+      <div class="history-item ${id === currentId ? 'active' : ''}"
+           onclick="switchChat('${id}')" title="${c.title}">
+        ${c.title}
+      </div>`).join('');
+}
+
+function clearMessages() {
+  const m = document.getElementById('messages');
+  m.innerHTML = `<div class="welcome" id="welcome-screen" style="display:none"></div>`;
+  document.getElementById('welcome-screen')?.remove();
+}
+
+// ── Web Search (DuckDuckGo Instant Answer API — CORS-safe) ──
+async function doWebSearch(query) {
+  // DuckDuckGo instant answers API — no API key, CORS-open
+  const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    const results = [];
+    if (d.AbstractText) results.push({ title: d.Heading, snippet: d.AbstractText, url: d.AbstractURL });
+    if (d.RelatedTopics) {
+      d.RelatedTopics.slice(0, 5).forEach(t => {
+        if (t.Text && t.FirstURL) {
+          results.push({ title: t.Text.split(' - ')[0] || t.Text.slice(0,60), snippet: t.Text, url: t.FirstURL });
+        }
+      });
+    }
+    return results.slice(0, 5);
+  } catch (e) {
+    return [];
+  }
+}
+
+// ── Render helpers ──
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatMarkdown(text) {
+  // code blocks
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
+    `<pre><code class="lang-${lang}">${escapeHtml(code.trim())}</code></pre>`);
+  // inline code
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // headers
+  text = text.replace(/^### (.+)$/gm, '<strong>$1</strong>');
+  text = text.replace(/^## (.+)$/gm, '<strong style="font-size:15px">$1</strong>');
+  // bullets
+  text = text.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+  // numbered lists
+  text = text.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  // paragraphs
+  const paras = text.split(/\n\n+/);
+  return paras.map(p => {
+    if (p.startsWith('<pre>') || p.startsWith('<ul>')) return p;
+    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+}
+
+function parseThinking(content) {
+  // DeepSeek R1 wraps CoT in <think>...</think>
+  const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/i);
+  if (thinkMatch) {
+    return {
+      think: thinkMatch[1].trim(),
+      answer: content.replace(/<think>[\s\S]*?<\/think>/i, '').trim()
+    };
+  }
+  return { think: null, answer: content };
+}
+
+function appendMessage(role, content, searchResults = [], meta = {}) {
+  const welcome = document.getElementById('welcome-screen');
+  if (welcome) welcome.remove();
+
+  const messages = document.getElementById('messages');
+  const { think, answer } = parseThinking(content);
+
+  const thinkHtml = think ? `
+    <div class="thinking-block" style="${showThinking ? '' : 'display:none'}">
+      <span class="think-label">💭 Chain of Thought</span>
+      ${escapeHtml(think).replace(/\n/g,'<br>')}
+    </div>` : '';
+
+  const searchHtml = searchResults.length ? `
+    <div class="search-results-bar">
+      🔍 Web sources: ${searchResults.map(r =>
+        `<a href="${r.url}" target="_blank" rel="noopener">${r.title || 'Link'}</a>`
+      ).join('')}
+    </div>` : '';
+
+  const metaHtml = meta.latency ? `
+    <div class="meta-row">
+      <span>⏱ ${meta.latency}ms</span>
+      <span>📥 ${meta.tok_in || 0} in</span>
+      <span>📤 ${meta.tok_out || 0} out</span>
+      ${meta.tps ? `<span>⚡ ${meta.tps} tok/s</span>` : ''}
+    </div>` : '';
+
+  if (role === 'assistant') {
+    const div = document.createElement('div');
+    div.className = 'message-row';
+    div.innerHTML = `
+      <div class="avatar avatar-ai">AI</div>
+      <div>
+        ${thinkHtml}
+        ${searchHtml}
+        <div class="bubble bubble-ai">${formatMarkdown(answer)}</div>
+        ${metaHtml}
+      </div>`;
+    messages.appendChild(div);
+  } else {
+    const div = document.createElement('div');
+    div.className = 'message-row user';
+    div.innerHTML = `
+      <div class="avatar avatar-user">H</div>
+      <div class="bubble bubble-user">${escapeHtml(content)}</div>`;
+    messages.appendChild(div);
+  }
+
+  messages.scrollTop = messages.scrollHeight;
+  return messages.lastElementChild;
+}
+
+function addTypingIndicator() {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message-row';
+  div.id = 'typing-row';
+  div.innerHTML = `
+    <div class="avatar avatar-ai">AI</div>
+    <div class="bubble bubble-ai">
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  document.getElementById('typing-row')?.remove();
+}
+
+// ── Streaming response ──
+async function streamResponse(messages_payload, onChunk) {
+  const endpoint = document.getElementById('endpoint').value.trim().replace(/\/$/, '');
+  const model    = document.getElementById('model-name').value.trim();
+  const temp     = parseFloat(document.getElementById('temperature').value) || 0.6;
+  const maxTok   = parseInt(document.getElementById('max-tokens').value)    || 2048;
+
+  const res = await fetch(`${endpoint}/v1/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages: messages_payload,
+      max_tokens: maxTok,
+      temperature: temp,
+      stream: true
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`vLLM API ${res.status}: ${err.slice(0,200)}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let full = '';
+  let usage = null;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    const text = decoder.decode(value, { stream: true });
+    const lines = text.split('\n').filter(l => l.startsWith('data: '));
+    for (const line of lines) {
+      const data = line.slice(6);
+      if (data === '[DONE]') continue;
+      try {
+        const obj = JSON.parse(data);
+        const delta = obj.choices?.[0]?.delta?.content || '';
+        full += delta;
+        onChunk(full);
+        if (obj.usage) usage = obj.usage;
+      } catch {}
+    }
+  }
+
+  return { full, usage };
+}
+
+// ── Main send ──
+async function sendMessage() {
+  const input = document.getElementById('user-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  if (!currentId) newChat();
+
+  input.value = '';
+  autoResize(input);
+  document.getElementById('send-btn').disabled = true;
+
+  const conv = conversations[currentId];
+  const forceSearch = webSearch && (text.toLowerCase().startsWith('search:') || webSearch);
+
+  // Store user message
+  conv.messages.push({ role: 'user', content: text });
+  appendMessage('user', text);
+
+  // Update conv title
+  if (conv.title === 'New Chat') {
+    conv.title = text.slice(0, 45) + (text.length > 45 ? '…' : '');
+    renderHistory();
+  }
+
+  addTypingIndicator();
+  const t0 = Date.now();
+
+  let searchResults = [];
+  let systemMsg = `You are DeepSeek R1, a powerful reasoning AI running on-premises on Red Hat OpenShift AI. Think step by step. For technical questions, show your reasoning. For code, write clean, production-quality code.`;
+
+  // Web search augmentation
+  if (forceSearch) {
+    const query = text.replace(/^search:\s*/i, '');
+    searchResults = await doWebSearch(query);
+    if (searchResults.length) {
+      const context = searchResults.map((r,i) => `[${i+1}] ${r.title}\n${r.snippet}`).join('\n\n');
+      systemMsg += `\n\nWEB SEARCH RESULTS for "${query}":\n${context}\n\nUse these results to inform your answer. Cite sources by number [1], [2], etc.`;
+    }
+  }
+
+  const payload = [
+    { role: 'system', content: systemMsg },
+    ...conv.messages
+  ];
+
+  let streamEl = null;
+
+  try {
+    const { full, usage } = await streamResponse(payload, (partial) => {
+      removeTypingIndicator();
+      if (!streamEl) {
+        // Create streaming bubble
+        const { think, answer } = parseThinking(partial);
+        const welcome = document.getElementById('welcome-screen');
+        if (welcome) welcome.remove();
+        const messages = document.getElementById('messages');
+        const div = document.createElement('div');
+        div.className = 'message-row';
+        div.id = 'streaming-row';
+        const thinkHtml = think ? `
+          <div class="thinking-block" style="${showThinking ? '' : 'display:none'}">
+            <span class="think-label">💭 Chain of Thought</span>
+            <span class="think-content">${escapeHtml(think).replace(/\n/g,'<br>')}</span>
+          </div>` : '';
+        const searchHtml = searchResults.length ? `
+          <div class="search-results-bar">
+            🔍 Web sources: ${searchResults.map(r =>
+              `<a href="${r.url}" target="_blank" rel="noopener">${r.title || 'Link'}</a>`
+            ).join('')}
+          </div>` : '';
+        div.innerHTML = `
+          <div class="avatar avatar-ai">AI</div>
+          <div>
+            ${thinkHtml}
+            ${searchHtml}
+            <div class="bubble bubble-ai" id="stream-content"></div>
+          </div>`;
+        messages.appendChild(div);
+        streamEl = document.getElementById('stream-content');
+        messages.scrollTop = messages.scrollHeight;
+      } else {
+        // Update streaming content
+        const { think, answer } = parseThinking(partial);
+        if (think) {
+          const thinkBlock = document.querySelector('#streaming-row .think-content');
+          if (thinkBlock) thinkBlock.innerHTML = escapeHtml(think).replace(/\n/g,'<br>');
+        }
+        if (streamEl) streamEl.innerHTML = formatMarkdown(parseThinking(partial).answer);
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+      }
+    });
+
+    document.getElementById('streaming-row')?.removeAttribute('id');
+
+    const latency = Date.now() - t0;
+    const tokOut = usage?.completion_tokens || full.split(/\s+/).length;
+    const tokIn  = usage?.prompt_tokens    || payload.map(m=>m.content).join(' ').split(/\s+/).length;
+    const tps    = tokOut > 0 ? Math.round(tokOut / (latency/1000)) : 0;
+
+    // Add meta row
+    if (streamEl) {
+      const metaDiv = document.createElement('div');
+      metaDiv.className = 'meta-row';
+      metaDiv.innerHTML = `
+        <span>⏱ ${latency}ms</span>
+        <span>📥 ${tokIn} in</span>
+        <span>📤 ${tokOut} out</span>
+        <span>⚡ ${tps} tok/s</span>`;
+      streamEl.parentElement.appendChild(metaDiv);
+    }
+
+    // Update stats
+    totalTokIn  += tokIn;
+    totalTokOut += tokOut;
+    turnCount++;
+    document.getElementById('tok-in').textContent    = totalTokIn;
+    document.getElementById('tok-out').textContent   = totalTokOut;
+    document.getElementById('latency').textContent   = latency + 'ms';
+    document.getElementById('tps').textContent       = tps + ' t/s';
+    document.getElementById('turn-count').textContent = turnCount;
+
+    // Estimate VRAM (rough: 1.5B w8a8 ≈ 2.2GB + KV cache)
+    const kvEst = Math.min(2.5 + tokOut * 0.0001, 5.8);
+    document.getElementById('vram-stat').textContent = kvEst.toFixed(1) + 'GB';
+
+    // Store assistant message
+    conv.messages.push({ role: 'assistant', content: full });
+
+  } catch (err) {
+    removeTypingIndicator();
+    document.getElementById('streaming-row')?.remove();
+    appendMessage('assistant',
+      `❌ **Error connecting to vLLM endpoint**\n\n\`\`\`\n${err.message}\n\`\`\`\n\nVerify:\n- Endpoint: \`${document.getElementById('endpoint').value}\`\n- InferenceService is Running: \`oc get inferenceservice -n deepseek-reasoning-demo\`\n- Route is accessible from this browser`
+    );
+  }
+
+  document.getElementById('send-btn').disabled = false;
+  input.focus();
+}
+
+// ── Helpers ──
+function sendPrompt(text) {
+  document.getElementById('user-input').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function renderMessages(msgs) {
+  const m = document.getElementById('messages');
+  m.innerHTML = '';
+  msgs.forEach(msg => appendMessage(msg.role, msg.content));
+}
+
+// ── Init ──
+newChat();
+document.getElementById('user-input').focus();
+</script>
+</body>
+</html>
