@@ -408,8 +408,11 @@ oc patch clusterpolicy gpu-cluster-policy \
 
 oc get node worker1.openshift-ai.huzaifa.lab \
   -o jsonpath='{.status.allocatable.nvidia\.com/gpu}'
-# 2
 ```
+Verify
+<img width="1053" height="420" alt="image" src="https://github.com/user-attachments/assets/ab91c3c5-7e04-4d08-b0a9-bd367df0f5ea" />
+
+
 
 ### GPU Monitoring : Prometheus Metrics
 
