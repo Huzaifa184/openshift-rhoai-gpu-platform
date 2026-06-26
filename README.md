@@ -1,11 +1,15 @@
 # Red Hat OpenShift AI : GPU Platform
 
-Production-pattern OpenShift AI 3.4.0 cluster on bare-metal ESXi with GPU passthrough,
-KServe model serving, and a verified DeepSeek R1 inference endpoint. All self-managed : no cloud dependency.
+Production-pattern OpenShift AI platform — bare metal, no cloud dependency.
+
+- OpenShift 4.21 · Connected UPI · hybrid hypervisor (ESXi + Workstation Pro)
+- GTX 1660 Super · PCI passthrough · RHCOS worker node
+- RHOAI 3.4.0 · KServe RawDeployment · vLLM 0.18.0
+- DeepSeek R1 1.5B w8a8 · 12–17 tok/s · 6 GB consumer GPU
 
 ---
 
-## Platform Status
+
 
 | Component | Notes |
 |-----------|-------|
