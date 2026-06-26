@@ -136,13 +136,14 @@ at the cost of manual provisioning.
 
 ### Stack
 
-| Layer | Operator / Tool | Version |
-|-------|----------------|---------|
-| Node Feature Discovery | NFD Operator | 4.21.0 |
-| GPU Enablement | NVIDIA GPU Operator (Certified) | 26.3.2 |
-| AI Platform | Red Hat OpenShift AI (RHODS) | 3.4.0 |
-| Model Serving | KServe · vLLM ServingRuntime | v0.18.0 |
-| Object Storage | MinIO AIStor Operator | 2026.4.13 |
-| Persistent Storage | Local Storage Operator | 4.21.0 |
-| Service Mesh | OpenShift Service Mesh | 3.2.0 |
-| GPU Sharing | NVIDIA Device Plugin · time-slicing | 26.3.2 |
+| Layer | Operator / Tool | Version | Status | Notes |
+|-------|----------------|---------|--------|-------|
+| Node Feature Discovery | NFD Operator | 4.21.0 | Running | Auto-labels GPU nodes · feeds GPU Operator |
+| GPU Enablement | NVIDIA GPU Operator | 26.3.2 | Running | Driver 580.126.20 · DaemonSet on worker1 |
+| GPU Monitoring | DCGM Exporter | 26.3.2 | Running | Live metrics via Prometheus · DCGM_FI_DEV_GPU_UTIL |
+| GPU Sharing | NVIDIA Device Plugin | 26.3.2 | Running | Time-slicing · 2 schedulable slices per GPU |
+| AI Platform | Red Hat OpenShift AI | 3.4.0 | Running | DataScienceCluster reconciled · dashboard live |
+| Model Serving | KServe · vLLM ServingRuntime | v0.18.0 | Running | InferenceService Ready=True · RawDeployment mode |
+| S3 Object Storage | MinIO AIStor Operator | 2026.4.13 | Running | In-cluster S3 · 899 GB capacity |
+| Persistent Storage | Local Storage Operator | 4.21.0 | Running | LocalVolumeSet · 3 PVs across worker nodes |
+
